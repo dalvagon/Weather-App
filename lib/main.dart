@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/utils/routes.dart';
+import 'package:weather_app/utils/theme.dart';
 
 void main() {
-  runApp(const WeatherApp());
+  runApp(const WeatherAlarm());
 }
 
-class WeatherApp extends StatelessWidget {
-  const WeatherApp({super.key});
+class WeatherAlarm extends StatelessWidget {
+  const WeatherAlarm({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Weather App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-    );
+        title: 'Weather Alarm',
+        initialRoute: '/',
+        routes: routes,
+        theme: theme);
   }
 }
