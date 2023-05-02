@@ -26,6 +26,18 @@ class Palette {
 ThemeData theme = ThemeData(
     primarySwatch: Palette.primary,
     primaryColor: Palette.primary,
+    colorScheme: ColorScheme.dark(
+      primary: Palette.primary,
+      secondary: Palette.primary,
+      surface: Palette.primary[800]!,
+      background: Palette.primary[900]!,
+      error: Colors.red,
+      onPrimary: Palette.primary[50]!,
+      onSecondary: Palette.primary[50]!,
+      onSurface: Palette.primary[50]!,
+      onBackground: Palette.primary[50]!,
+      onError: Colors.red[50]!,
+    ),
     primaryColorDark: Palette.primary[900],
     primaryColorLight: Palette.primary[50],
     brightness: Brightness.dark,

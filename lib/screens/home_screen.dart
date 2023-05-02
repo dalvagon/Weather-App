@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../utils/alarm_manager.dart';
 
@@ -25,31 +26,33 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _selectTime() async {
+  Future<TimeOfDay?> _selectTime() async {
     final TimeOfDay? timeOfDay = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
 
+    return timeOfDay;
+  }
+
+  Future<void> _createAlarm() async {
+    final TimeOfDay? timeOfDay = await _selectTime();
+
     if (timeOfDay != null) {
-      final DateTime now = DateTime.now();
-      DateTime alarm = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        timeOfDay.hour,
-        timeOfDay.minute,
-      );
-
-      if (alarm.isBefore(now)) {
-        alarm = DateTime(
-            now.year, now.month, now.day + 1, timeOfDay.hour, timeOfDay.minute);
-      }
-
-      await AlarmManager.setAlarm(alarm, alarms.length);
+      await AlarmManager.createAlarm(timeOfDay);
 
       await _getAlarms();
     }
+  }
+
+  Future<void> _switchOnOrOff(int id) async {
+    await AlarmManager.switchOnOrOff(id);
+    await _getAlarms();
+  }
+
+  Future<void> _removeAllarm(int id) async {
+    await AlarmManager.removeAlarm(id);
+    await _getAlarms();
   }
 
   @override
@@ -65,29 +68,58 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.zero,
               ),
-              child: ExpansionTile(
-                tilePadding: const EdgeInsets.only(
-                    left: 32, right: 32, top: 8, bottom: 8),
-                title: Text(
-                    '${DateTime.parse(alarms[index]).hour}:${DateTime.parse(alarms[index]).minute}',
-                    style: Theme.of(context).textTheme.headlineMedium),
+              child: Column(
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(
-                        left: 32, right: 32, top: 8, bottom: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: 32, right: 32, top: 16, bottom: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        ElevatedButton.icon(
-                          onPressed: () async {
-                            await AlarmManager.removeAlarm(index);
-                            await _getAlarms();
-                          },
-                          label: const Text('Delete'),
-                          icon: const Icon(Icons.delete),
+                        Expanded(
+                          child: Text(
+                              DateFormat('hh:mm a').format(alarms[index].time),
+                              style:
+                                  Theme.of(context).textTheme.headlineMedium),
                         ),
+                        Switch(
+                            value: alarms[index].isOn,
+                            onChanged: (bool value) async {
+                              _switchOnOrOff(alarms[index].id);
+                            })
                       ],
                     ),
+                  ),
+                  ExpansionTile(
+                    tilePadding: const EdgeInsets.only(
+                        left: 32, right: 32, top: 8, bottom: 8),
+                    title: Text(alarms[index].label),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.only(
+                            left: 32, right: 32, top: 8, bottom: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton.icon(
+                                onPressed: () async {
+                                  _removeAllarm(alarms[index].id);
+                                },
+                                label: const Text('Delete'),
+                                icon: const Icon(Icons.delete),
+                                style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.all(0),
+                                    foregroundColor: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium!
+                                        .color)),
+                          ],
+                        ),
+                      )
+                    ],
                   )
                 ],
               ),
@@ -98,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _selectTime();
+          _createAlarm();
         },
         child: const Icon(Icons.add),
       ),
