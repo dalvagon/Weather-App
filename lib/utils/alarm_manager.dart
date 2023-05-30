@@ -84,6 +84,22 @@ class AlarmManager {
     prefs.setStringList(_alarmsKey, alarms.map((e) => e.toString()).toList());
   }
 
+  static Future<void> setSpeakWeather(int id, bool value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final List alarms = prefs.getStringList(_alarmsKey) ?? [];
+
+    for (var alarm in alarms) {
+      if (AlarmModel.fromJson(alarm).id == id) {
+        final AlarmModel newAlarm = AlarmModel.fromJson(alarm);
+        newAlarm.speakWeather = value;
+        alarms[alarms.indexOf(alarm)] = newAlarm.toJson();
+        break;
+      }
+    }
+
+    prefs.setStringList(_alarmsKey, alarms.map((e) => e.toString()).toList());
+  }
+
   static Future<void> _cancelAlarm(int id) async {
     await AndroidAlarmManager.cancel(id);
   }
@@ -106,9 +122,20 @@ class AlarmManager {
     Weather w = await wf.currentWeatherByLocation(
         position.latitude, position.longitude);
 
-    print("Alarm $id fired! ${position.latitude}, ${position.longitude}");
-    print(w);
-    _speak(w);
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final List alarms = prefs.getStringList(_alarmsKey) ?? [];
+
+    for (var alarm in alarms) {
+      if (AlarmModel.fromJson(alarm).id == id) {
+        final AlarmModel newAlarm = AlarmModel.fromJson(alarm);
+        if (newAlarm.speakWeather) {
+          await _speak(w);
+        } else {
+          await _wakeUp();
+        }
+        break;
+      }
+    }
   }
 
   static Future<void> _speak(Weather w) async {
@@ -122,8 +149,13 @@ class AlarmManager {
 
         """;
 
-    print(text);
     await tts.speak(text);
+  }
+
+  static Future<void> _wakeUp() async {
+    FlutterTts tts = FlutterTts();
+    await tts.setLanguage("en-US");
+    await tts.speak("Wake up! Wake up! Wake up!");
   }
 
   static void _updateAlarm(AlarmModel alarm) {

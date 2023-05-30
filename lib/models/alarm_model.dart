@@ -4,12 +4,14 @@ class AlarmModel {
   final int id;
   DateTime time;
   bool isOn;
+  bool speakWeather;
   String label;
 
   AlarmModel(
       {required this.id,
       required this.time,
       required this.isOn,
+      this.speakWeather = true,
       this.label = ''});
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class AlarmModel {
       'id': id,
       'time': time.toIso8601String(),
       'isOn': isOn,
+      'speakWeather': speakWeather,
       'label': label,
     };
   }
@@ -26,6 +29,7 @@ class AlarmModel {
         id: map['id'],
         time: DateTime.parse(map['time']),
         isOn: map['isOn'],
+        speakWeather: map['speakWeather'],
         label: map['label']);
   }
 
@@ -36,6 +40,6 @@ class AlarmModel {
 
   @override
   String toString() {
-    return 'Alarm{id: $id, time: $time, isOn: $isOn, label: $label}';
+    return 'Alarm{id: $id, time: $time, isOn: $isOn, speakWeather: $speakWeather, label: $label}';
   }
 }

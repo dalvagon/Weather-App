@@ -12,6 +12,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List alarms = [];
+  List ringtones = [];
 
   @override
   void initState() {
@@ -40,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (timeOfDay != null) {
       await AlarmManager.createAlarm(timeOfDay);
-
       await _getAlarms();
     }
   }
@@ -55,10 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
     await _getAlarms();
   }
 
+  Future<void> _setSpeakWeather(int id, bool value) async {
+    await AlarmManager.setSpeakWeather(id, value);
+    await _getAlarms();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('My Alarms')),
+      appBar: AppBar(title: const Text('MY ALARMS')),
       body: Container(
         margin: const EdgeInsets.all(16),
         child: ListView.builder(
@@ -78,9 +83,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                              DateFormat('hh:mm a').format(alarms[index].time),
-                              style:
-                                  Theme.of(context).textTheme.headlineMedium),
+                              DateFormat('HH:mm').format(alarms[index].time),
+                              style: const TextStyle(
+                                  fontSize: 40, fontWeight: FontWeight.bold)),
                         ),
                         Switch(
                             value: alarms[index].isOn,
@@ -94,6 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     tilePadding: const EdgeInsets.only(
                         left: 32, right: 32, top: 8, bottom: 8),
                     title: Text(alarms[index].label),
+                    textColor: Theme.of(context).primaryColorLight,
+                    iconColor: Theme.of(context).primaryColorLight,
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
@@ -101,21 +108,34 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         margin: const EdgeInsets.only(
                             left: 32, right: 32, top: 8, bottom: 8),
-                        child: Row(
+                        alignment: Alignment.centerLeft,
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            ToggleButtons(
+                                isSelected: [
+                                  alarms[index].speakWeather,
+                                  !alarms[index].speakWeather
+                                ],
+                                onPressed: (int toggleButtonIndex) async {
+                                  _setSpeakWeather(
+                                      alarms[index].id, toggleButtonIndex == 0);
+                                },
+                                children: const [
+                                  Icon(Icons.sunny),
+                                  Icon(Icons.volume_off),
+                                ]),
                             TextButton.icon(
                                 onPressed: () async {
                                   _removeAllarm(alarms[index].id);
                                 },
-                                label: const Text('Delete'),
-                                icon: const Icon(Icons.delete),
+                                label: const Text('DELETE'),
+                                icon: const Icon(Icons.delete_outline_sharp),
                                 style: TextButton.styleFrom(
                                     padding: const EdgeInsets.all(0),
-                                    foregroundColor: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium!
-                                        .color)),
+                                    foregroundColor:
+                                        Theme.of(context).primaryColorLight)),
                           ],
                         ),
                       )
